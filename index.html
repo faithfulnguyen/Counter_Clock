@@ -3,11 +3,288 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Yêu Thương, Khiêm Nhường, Vâng Phục</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <title>Yêu Thương · Khiêm Nhường · Vâng Phục</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; transition: background 0.5s; }
+
+    /* ── Layout ── */
+    #app { min-height: 100vh; display: flex; flex-direction: column; padding: 2rem 1rem; }
+    h1 { text-align: center; font-size: 1.75rem; font-weight: 700; color: #1f2937; margin-bottom: 2rem; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; max-width: 900px; margin: 0 auto 2rem; width: 100%; }
+    .tab-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border: none; border-radius: 9999px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.3s; background: #fff; color: #4b5563; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .tab-btn:hover { background: #f9fafb; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .tab-btn.active { color: #fff; transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .tab-btn svg { flex-shrink: 0; }
+
+    /* ── Card ── */
+    .card { max-width: 600px; margin: 0 auto; width: 100%; background: #fff; border-radius: 1.5rem; padding: 2rem; box-shadow: 0 10px 40px rgba(0,0,0,0.12); border: 2px solid; display: flex; flex-direction: column; align-items: center; }
+    .icon-wrap { padding: 1rem; border-radius: 9999px; margin-bottom: 1.5rem; }
+    .card h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .card p { color: #6b7280; text-align: center; max-width: 400px; margin-bottom: 2rem; line-height: 1.6; }
+
+    /* ── Time input ── */
+    .time-input { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+    .time-field { display: flex; flex-direction: column; align-items: center; }
+    .time-field input { width: 6rem; text-align: center; font-size: 2.25rem; padding: 0.75rem; border-radius: 0.75rem; border: 2px solid; outline: none; font-family: inherit; }
+    .time-field span { font-size: 0.75rem; color: #9ca3af; margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+    .time-sep { font-size: 2.25rem; color: #d1d5db; font-weight: 700; margin-bottom: 1.5rem; }
+
+    /* ── Countdown display ── */
+    .countdown { font-size: 5rem; font-family: 'Courier New', monospace; font-weight: 300; letter-spacing: -0.02em; margin-bottom: 2rem; }
+
+    /* ── Buttons ── */
+    .controls { display: flex; gap: 1rem; }
+    .btn { display: flex; align-items: center; gap: 0.5rem; padding: 1rem 2rem; border-radius: 9999px; border: none; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.2); }
+    .btn-pause { background: #f59e0b; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .btn-pause:hover { background: #d97706; transform: translateY(-1px); }
+    .btn-reset { background: #f3f4f6; color: #374151; }
+    .btn-reset:hover:not(:disabled) { background: #e5e7eb; }
+    .btn-reset:disabled { color: #9ca3af; cursor: not-allowed; }
+
+    /* ── Modal ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; z-index: 50; align-items: center; justify-content: center; padding: 1rem; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); }
+    .modal-overlay.show { display: flex; }
+    .modal { background: #fff; border-radius: 1.5rem; padding: 2rem; max-width: 22rem; width: 100%; box-shadow: 0 25px 50px rgba(0,0,0,0.25); display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .modal .icon-wrap { animation: bounce 1s infinite; }
+    .modal h3 { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 0.5rem; }
+    .modal p { color: #4b5563; margin-bottom: 1.5rem; line-height: 1.6; }
+    .modal .btn-done { width: 100%; justify-content: center; border-radius: 0.75rem; color: #fff; }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* ── Theme colors ── */
+    .theme-love    body, body.love    { background: linear-gradient(135deg, #fff1f2, #fce7f3); }
+    .theme-humility body, body.humility { background: linear-gradient(135deg, #f0fdfa, #d1fae5); }
+    .theme-obedience body, body.obedience { background: linear-gradient(135deg, #eef2ff, #ede9fe); }
+  </style>
+</head>
+<body class="love">
+<div id="app">
+  <h1>Yêu Thương · Khiêm Nhường · Vâng Phục</h1>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="love" style="background:#f43f5e">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Yêu thương
+    </button>
+    <button class="tab-btn" data-tab="humility">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+      Khiêm nhường
+    </button>
+    <button class="tab-btn" data-tab="obedience">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      Vâng phục
+    </button>
+  </div>
+
+  <div id="card-container"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="icon-wrap" id="modal-icon"></div>
+    <h3>Đã hết giờ!</h3>
+    <p>Thời gian thực hành <strong id="modal-tab-name"></strong> của bạn đã hoàn tất.</p>
+    <button class="btn btn-done" id="modal-close">Hoàn thành</button>
+  </div>
+</div>
+
+<script>
+  const TABS = {
+    love: {
+      label: 'Yêu thương',
+      color: '#f43f5e',
+      border: '#fecdd3',
+      iconBg: '#fff1f2',
+      gradient: 'linear-gradient(135deg, #fff1f2, #fce7f3)',
+      message: 'Tình yêu-thương chẳng hề hư-mất bao giờ (I Cô-rinh-tô 13:8)',
+      icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="#f43f5e"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
+    },
+    humility: {
+      label: 'Khiêm nhường',
+      color: '#14b8a6',
+      border: '#99f6e4',
+      iconBg: '#f0fdfa',
+      gradient: 'linear-gradient(135deg, #f0fdfa, #d1fae5)',
+      message: 'Nhưng ai có lòng khiêm-nhượng sẽ được tôn-vinh (Châm-ngôn 29:23)',
+      icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#14b8a6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`
+    },
+    obedience: {
+      label: 'Vâng phục',
+      color: '#6366f1',
+      border: '#c7d2fe',
+      iconBg: '#eef2ff',
+      gradient: 'linear-gradient(135deg, #eef2ff, #ede9fe)',
+      message: 'Ngài đã hiện ra như một người, tự hạ mình xuống, vâng-phục cho đến chết, thậm chí chết trên cây thập-tự (Phi-líp 2:8)',
+      icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>`
+    }
+  };
+
+  // Timer state per tab
+  const state = {};
+  Object.keys(TABS).forEach(id => {
+    state[id] = { mins: '5', secs: '0', timeLeft: 0, running: false, started: false, interval: null };
+  });
+
+  let activeTab = 'love';
+
+  // ── Render ──────────────────────────────────────────────────────────
+
+  function renderCard(tabId) {
+    const tab = TABS[tabId];
+    const s = state[tabId];
+    const fmt = n => String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0');
+
+    const timeArea = s.started
+      ? `<div class="countdown" style="color:${tab.color}">${fmt(s.timeLeft)}</div>`
+      : `<div class="time-input">
+          <div class="time-field">
+            <input type="number" id="inp-mins" min="0" max="999" value="${s.mins}" style="border-color:${tab.border}; color:${tab.color}" />
+            <span>Phút</span>
+          </div>
+          <div class="time-sep">:</div>
+          <div class="time-field">
+            <input type="number" id="inp-secs" min="0" max="59" value="${s.secs}" style="border-color:${tab.border}; color:${tab.color}" />
+            <span>Giây</span>
+          </div>
+        </div>`;
+
+    const actionBtn = s.running
+      ? `<button class="btn btn-pause" id="btn-pause">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          Tạm dừng
+        </button>`
+      : `<button class="btn btn-primary" id="btn-start" style="background:${tab.color}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          ${s.started ? 'Tiếp tục' : 'Bắt đầu'}
+        </button>`;
+
+    document.getElementById('card-container').innerHTML = `
+      <div class="card" style="border-color:${tab.border}">
+        <div class="icon-wrap" style="background:${tab.iconBg}">${tab.icon}</div>
+        <h2 style="color:${tab.color}">${tab.label}</h2>
+        <p>${tab.message}</p>
+        ${timeArea}
+        <div class="controls">
+          ${actionBtn}
+          <button class="btn btn-reset" id="btn-reset" ${s.started ? '' : 'disabled'}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+            Đặt lại
+          </button>
+        </div>
+      </div>`;
+
+    // Bind events
+    document.getElementById('btn-start')?.addEventListener('click', handleStart);
+    document.getElementById('btn-pause')?.addEventListener('click', handlePause);
+    document.getElementById('btn-reset')?.addEventListener('click', handleReset);
+    document.getElementById('inp-mins')?.addEventListener('input', e => { state[activeTab].mins = e.target.value; });
+    document.getElementById('inp-secs')?.addEventListener('input', e => { state[activeTab].secs = e.target.value; });
+  }
+
+  // ── Timer logic ─────────────────────────────────────────────────────
+
+  function handleStart() {
+    const s = state[activeTab];
+    if (!s.started) {
+      const total = (parseInt(s.mins) || 0) * 60 + (parseInt(s.secs) || 0);
+      if (total <= 0) return;
+      s.timeLeft = total;
+      s.started = true;
+    }
+    s.running = true;
+    s.interval = setInterval(() => {
+      state[activeTab].timeLeft--;
+      if (state[activeTab].timeLeft <= 0) {
+        clearInterval(state[activeTab].interval);
+        state[activeTab].running = false;
+        state[activeTab].started = false;
+        renderCard(activeTab);
+        showModal(activeTab);
+      } else {
+        renderCard(activeTab);
+      }
+    }, 1000);
+    renderCard(activeTab);
+  }
+
+  function handlePause() {
+    const s = state[activeTab];
+    clearInterval(s.interval);
+    s.running = false;
+    renderCard(activeTab);
+  }
+
+  function handleReset() {
+    const s = state[activeTab];
+    clearInterval(s.interval);
+    s.running = false;
+    s.started = false;
+    s.timeLeft = 0;
+    renderCard(activeTab);
+  }
+
+  // ── Tabs ─────────────────────────────────────────────────────────────
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // pause current tab if running
+      const cur = state[activeTab];
+      if (cur.running) { clearInterval(cur.interval); cur.running = false; }
+
+      activeTab = btn.dataset.tab;
+
+      // update button styles
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        const t = TABS[b.dataset.tab];
+        if (b.dataset.tab === activeTab) {
+          b.classList.add('active');
+          b.style.background = t.color;
+          b.style.color = '#fff';
+        } else {
+          b.classList.remove('active');
+          b.style.background = '#fff';
+          b.style.color = '';
+        }
+      });
+
+      document.body.style.background = TABS[activeTab].gradient;
+      renderCard(activeTab);
+    });
+  });
+
+  // ── Modal ─────────────────────────────────────────────────────────────
+
+  function showModal(tabId) {
+    const tab = TABS[tabId];
+    document.getElementById('modal-icon').innerHTML = `<div style="background:${tab.iconBg};padding:1rem;border-radius:9999px">${tab.icon}</div>`;
+    document.getElementById('modal-tab-name').textContent = tab.label;
+    document.getElementById('modal-tab-name').style.color = tab.color;
+    document.getElementById('modal-close').style.background = tab.color;
+    document.getElementById('modal').classList.add('show');
+  }
+
+  document.getElementById('modal-close').addEventListener('click', () => {
+    document.getElementById('modal').classList.remove('show');
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────
+
+  document.body.style.background = TABS[activeTab].gradient;
+  renderCard(activeTab);
+</script>
+</body>
+</html>
+
 </head>
 <body class="m-0 p-0">
   <div id="root"></div>
