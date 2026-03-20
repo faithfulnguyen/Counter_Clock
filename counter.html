@@ -1,0 +1,257 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Heart, Leaf, ShieldCheck, Play, Pause, RotateCcw, X, BellRing } from 'lucide-react';
+
+// Cấu hình cho 3 lựa chọn
+const TABS = [
+  { 
+    id: 'love', 
+    label: 'Yêu thương', 
+    icon: Heart, 
+    color: 'text-rose-500', 
+    bg: 'bg-rose-500', 
+    hoverBg: 'hover:bg-rose-600',
+    lightBg: 'bg-rose-50', 
+    border: 'border-rose-200',
+    gradient: 'from-rose-50 to-pink-100',
+    message: 'Tình yêu-thương chẳng hề hư-mất bao giờ (I Cô-rinh-tô 13:8)'
+  },
+  { 
+    id: 'humility', 
+    label: 'Khiêm nhường', 
+    icon: Leaf, 
+    color: 'text-teal-500', 
+    bg: 'bg-teal-500', 
+    hoverBg: 'hover:bg-teal-600',
+    lightBg: 'bg-teal-50', 
+    border: 'border-teal-200',
+    gradient: 'from-teal-50 to-emerald-100',
+    message: 'Nhưng ai có lòng khiêm-nhượng sẽ được tôn-vinh (Châm-ngôn 29:23)'
+  },
+  { 
+    id: 'obedience', 
+    label: 'Vâng phục', 
+    icon: ShieldCheck, 
+    color: 'text-indigo-500', 
+    bg: 'bg-indigo-500', 
+    hoverBg: 'hover:bg-indigo-600',
+    lightBg: 'bg-indigo-50', 
+    border: 'border-indigo-200',
+    gradient: 'from-indigo-50 to-violet-100',
+    message: 'Ngài đã hiện ra như một người, tự hạ mình xuống, vâng-phục cho đến chết, thậm chí chết trên cây thập-tự (Phi-líp 2:8)'
+  },
+];
+
+// Component hiển thị bộ đếm cho từng Tab
+const TimerView = ({ tab, isActive, onComplete }) => {
+  const [inputMinutes, setInputMinutes] = useState('5');
+  const [inputSeconds, setInputSeconds] = useState('0');
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  // Xử lý đếm ngược
+  useEffect(() => {
+    let interval;
+    if (isRunning && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (isRunning && timeLeft === 0) {
+      setIsRunning(false);
+      setHasStarted(false);
+      onComplete(tab); // Gọi hàm hiển thị thông báo khi hết giờ
+    }
+    return () => clearInterval(interval);
+  }, [isRunning, timeLeft, onComplete, tab]);
+
+  const handleStart = () => {
+    if (!hasStarted) {
+      const mins = parseInt(inputMinutes) || 0;
+      const secs = parseInt(inputSeconds) || 0;
+      const totalSeconds = mins * 60 + secs;
+      
+      if (totalSeconds > 0) {
+        setTimeLeft(totalSeconds);
+        setHasStarted(true);
+        setIsRunning(true);
+      }
+    } else {
+      setIsRunning(true);
+    }
+  };
+
+  const handlePause = () => {
+    setIsRunning(false);
+  };
+
+  const handleReset = () => {
+    setIsRunning(false);
+    setHasStarted(false);
+    setTimeLeft(0);
+  };
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  // Ẩn component nếu không phải tab đang được chọn (nhưng vẫn giữ state đếm ngược ngầm nếu muốn)
+  if (!isActive) return null;
+
+  return (
+    <div className={`flex flex-col items-center justify-center p-8 rounded-3xl bg-white shadow-xl border ${tab.border} animate-in fade-in zoom-in duration-300`}>
+      <div className={`p-4 rounded-full ${tab.lightBg} ${tab.color} mb-6`}>
+        <tab.icon size={48} strokeWidth={1.5} />
+      </div>
+      
+      <h2 className={`text-3xl font-bold mb-2 ${tab.color}`}>{tab.label}</h2>
+      <p className="text-gray-500 mb-8 text-center max-w-md">{tab.message}</p>
+
+      {/* Vùng hiển thị thời gian */}
+      <div className="mb-8">
+        {!hasStarted ? (
+          <div className="flex items-center gap-4 text-4xl font-light">
+            <div className="flex flex-col items-center">
+              <input
+                type="number"
+                min="0"
+                max="999"
+                value={inputMinutes}
+                onChange={(e) => setInputMinutes(e.target.value)}
+                className={`w-24 text-center p-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all ${tab.border} focus:border-${tab.bg.split('-')[1]}-500 focus:ring-${tab.bg.split('-')[1]}-100`}
+              />
+              <span className="text-sm text-gray-400 mt-2 font-medium uppercase tracking-wider">Phút</span>
+            </div>
+            <span className="text-gray-300 font-bold -mt-8">:</span>
+            <div className="flex flex-col items-center">
+              <input
+                type="number"
+                min="0"
+                max="59"
+                value={inputSeconds}
+                onChange={(e) => setInputSeconds(e.target.value)}
+                className={`w-24 text-center p-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all ${tab.border} focus:border-${tab.bg.split('-')[1]}-500 focus:ring-${tab.bg.split('-')[1]}-100`}
+              />
+              <span className="text-sm text-gray-400 mt-2 font-medium uppercase tracking-wider">Giây</span>
+            </div>
+          </div>
+        ) : (
+          <div className={`text-8xl font-mono tracking-tight font-light ${tab.color}`}>
+            {formatTime(timeLeft)}
+          </div>
+        )}
+      </div>
+
+      {/* Các nút điều khiển */}
+      <div className="flex gap-4">
+        {!isRunning ? (
+          <button
+            onClick={handleStart}
+            className={`flex items-center gap-2 px-8 py-4 rounded-full text-white font-semibold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 ${tab.bg} ${tab.hoverBg}`}
+          >
+            <Play size={20} fill="currentColor" />
+            {hasStarted ? 'Tiếp tục' : 'Bắt đầu'}
+          </button>
+        ) : (
+          <button
+            onClick={handlePause}
+            className="flex items-center gap-2 px-8 py-4 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-semibold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+          >
+            <Pause size={20} fill="currentColor" />
+            Tạm dừng
+          </button>
+        )}
+        
+        <button
+          onClick={handleReset}
+          disabled={!hasStarted}
+          className={`flex items-center gap-2 px-6 py-4 rounded-full font-semibold transition-all ${hasStarted ? 'bg-gray-100 hover:bg-gray-200 text-gray-700' : 'bg-gray-50 text-gray-400 cursor-not-allowed'}`}
+        >
+          <RotateCcw size={20} />
+          Đặt lại
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState(TABS[0].id);
+  const [completedTab, setCompletedTab] = useState(null); // Lưu thông tin tab vừa đếm xong để hiển thị modal
+
+  const activeTabData = TABS.find(t => t.id === activeTab);
+
+  const handleTimerComplete = (tab) => {
+    setCompletedTab(tab);
+    // Có thể thêm âm thanh ting ting ở đây nếu muốn
+  };
+
+  return (
+    <div className={`min-h-screen bg-gradient-to-br ${activeTabData.gradient} flex flex-col transition-colors duration-500 p-4 sm:p-8 font-sans`}>
+      
+      {/* Header & Tabs */}
+      <div className="max-w-4xl mx-auto w-full mb-8">
+        <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">Yêu Thương, Khiêm Nhường, Vâng Phục</h1>
+        
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-300
+                  ${isActive 
+                    ? `${tab.bg} text-white shadow-md scale-105` 
+                    : 'bg-white text-gray-600 hover:bg-gray-50 hover:shadow'
+                  }
+                `}
+              >
+                <Icon size={18} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col justify-center">
+        {TABS.map((tab) => (
+          <TimerView 
+            key={tab.id} 
+            tab={tab} 
+            isActive={activeTab === tab.id} 
+            onComplete={handleTimerComplete}
+          />
+        ))}
+      </div>
+
+      {/* Modal Thông báo Hết giờ */}
+      {completedTab && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col items-center text-center">
+            <div className={`p-4 rounded-full ${completedTab.lightBg} ${completedTab.color} mb-4 animate-bounce`}>
+              <BellRing size={40} />
+            </div>
+            
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">Đã hết giờ!</h3>
+            <p className="text-gray-600 mb-6">
+              Thời gian thực hành <span className={`font-semibold ${completedTab.color}`}>{completedTab.label}</span> của bạn đã hoàn tất.
+            </p>
+            
+            <button
+              onClick={() => setCompletedTab(null)}
+              className={`w-full py-3 rounded-xl text-white font-semibold transition-colors ${completedTab.bg} ${completedTab.hoverBg}`}
+            >
+              Hoàn thành
+            </button>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
