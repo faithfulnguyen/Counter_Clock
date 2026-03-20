@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Yêu Thương, Khiêm Nhường, Vâng Phục</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/lucide-react/dist/umd/lucide-react.js" crossorigin></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="m-0 p-0">
@@ -15,7 +14,57 @@
 
   <script type="text/babel">
     const { useState, useEffect } = React;
-    const { Heart, Leaf, ShieldCheck, Play, Pause, RotateCcw, BellRing } = LucideReact;
+
+    // ── Inline SVG Icons ──────────────────────────────────────────────
+    const Heart = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    );
+
+    const Leaf = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/>
+        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+      </svg>
+    );
+
+    const ShieldCheck = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <polyline points="9 12 11 14 15 10"/>
+      </svg>
+    );
+
+    const Play = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+    );
+
+    const Pause = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="6" y="4" width="4" height="16"/>
+        <rect x="14" y="4" width="4" height="16"/>
+      </svg>
+    );
+
+    const RotateCcw = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="1 4 1 10 7 10"/>
+        <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+      </svg>
+    );
+
+    const BellRing = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        <line x1="2" y1="8" x2="4" y2="8"/>
+        <line x1="20" y1="8" x2="22" y2="8"/>
+      </svg>
+    );
+    // ──────────────────────────────────────────────────────────────────
 
     const TABS = [
       {
@@ -56,7 +105,7 @@
       },
     ];
 
-    const TimerView = ({ tab, isActive, onComplete }) => {
+    function TimerView({ tab, isActive, onComplete }) {
       const [inputMinutes, setInputMinutes] = useState('5');
       const [inputSeconds, setInputSeconds] = useState('0');
       const [timeLeft, setTimeLeft] = useState(0);
@@ -64,54 +113,34 @@
       const [hasStarted, setHasStarted] = useState(false);
 
       useEffect(() => {
-        let interval;
-        if (isRunning && timeLeft > 0) {
-          interval = setInterval(() => {
-            setTimeLeft((prev) => prev - 1);
-          }, 1000);
-        } else if (isRunning && timeLeft === 0) {
+        if (!isRunning) return;
+        if (timeLeft === 0) {
           setIsRunning(false);
           setHasStarted(false);
           onComplete(tab);
+          return;
         }
+        const interval = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
         return () => clearInterval(interval);
-      }, [isRunning, timeLeft, onComplete, tab]);
+      }, [isRunning, timeLeft]);
 
       const handleStart = () => {
         if (!hasStarted) {
-          const mins = parseInt(inputMinutes) || 0;
-          const secs = parseInt(inputSeconds) || 0;
-          const totalSeconds = mins * 60 + secs;
-          if (totalSeconds > 0) {
-            setTimeLeft(totalSeconds);
-            setHasStarted(true);
-            setIsRunning(true);
-          }
+          const total = (parseInt(inputMinutes) || 0) * 60 + (parseInt(inputSeconds) || 0);
+          if (total > 0) { setTimeLeft(total); setHasStarted(true); setIsRunning(true); }
         } else {
           setIsRunning(true);
         }
       };
 
-      const handlePause = () => setIsRunning(false);
-
-      const handleReset = () => {
-        setIsRunning(false);
-        setHasStarted(false);
-        setTimeLeft(0);
-      };
-
-      const formatTime = (seconds) => {
-        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-        const s = (seconds % 60).toString().padStart(2, '0');
-        return `${m}:${s}`;
-      };
+      const formatTime = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
       if (!isActive) return null;
 
       return (
         <div className={`flex flex-col items-center justify-center p-8 rounded-3xl bg-white shadow-xl border ${tab.border}`}>
           <div className={`p-4 rounded-full ${tab.lightBg} ${tab.color} mb-6`}>
-            <tab.icon size={48} strokeWidth={1.5} />
+            <tab.icon size={48} />
           </div>
 
           <h2 className={`text-3xl font-bold mb-2 ${tab.color}`}>{tab.label}</h2>
@@ -119,100 +148,67 @@
 
           <div className="mb-8">
             {!hasStarted ? (
-              <div className="flex items-center gap-4 text-4xl font-light">
+              <div className="flex items-center gap-4">
                 <div className="flex flex-col items-center">
-                  <input
-                    type="number"
-                    min="0"
-                    max="999"
-                    value={inputMinutes}
-                    onChange={(e) => setInputMinutes(e.target.value)}
-                    className={`w-24 text-center p-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all ${tab.border}`}
-                  />
-                  <span className="text-sm text-gray-400 mt-2 font-medium uppercase tracking-wider">Phút</span>
+                  <input type="number" min="0" max="999" value={inputMinutes}
+                    onChange={e => setInputMinutes(e.target.value)}
+                    className={`w-24 text-center text-4xl p-3 rounded-xl border-2 focus:outline-none ${tab.border}`} />
+                  <span className="text-sm text-gray-400 mt-2 uppercase tracking-wider">Phút</span>
                 </div>
-                <span className="text-gray-300 font-bold -mt-8">:</span>
+                <span className="text-4xl text-gray-300 font-bold mb-6">:</span>
                 <div className="flex flex-col items-center">
-                  <input
-                    type="number"
-                    min="0"
-                    max="59"
-                    value={inputSeconds}
-                    onChange={(e) => setInputSeconds(e.target.value)}
-                    className={`w-24 text-center p-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all ${tab.border}`}
-                  />
-                  <span className="text-sm text-gray-400 mt-2 font-medium uppercase tracking-wider">Giây</span>
+                  <input type="number" min="0" max="59" value={inputSeconds}
+                    onChange={e => setInputSeconds(e.target.value)}
+                    className={`w-24 text-center text-4xl p-3 rounded-xl border-2 focus:outline-none ${tab.border}`} />
+                  <span className="text-sm text-gray-400 mt-2 uppercase tracking-wider">Giây</span>
                 </div>
               </div>
             ) : (
-              <div className={`text-8xl font-mono tracking-tight font-light ${tab.color}`}>
-                {formatTime(timeLeft)}
-              </div>
+              <div className={`text-8xl font-mono font-light ${tab.color}`}>{formatTime(timeLeft)}</div>
             )}
           </div>
 
           <div className="flex gap-4">
             {!isRunning ? (
-              <button
-                onClick={handleStart}
-                className={`flex items-center gap-2 px-8 py-4 rounded-full text-white font-semibold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 ${tab.bg} ${tab.hoverBg}`}
-              >
-                <Play size={20} fill="currentColor" />
+              <button onClick={handleStart}
+                className={`flex items-center gap-2 px-8 py-4 rounded-full text-white font-semibold shadow-lg ${tab.bg} ${tab.hoverBg}`}>
+                <Play size={20} />
                 {hasStarted ? 'Tiếp tục' : 'Bắt đầu'}
               </button>
             ) : (
-              <button
-                onClick={handlePause}
-                className="flex items-center gap-2 px-8 py-4 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-semibold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
-              >
-                <Pause size={20} fill="currentColor" />
+              <button onClick={() => setIsRunning(false)}
+                className="flex items-center gap-2 px-8 py-4 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow-lg">
+                <Pause size={20} />
                 Tạm dừng
               </button>
             )}
-
-            <button
-              onClick={handleReset}
+            <button onClick={() => { setIsRunning(false); setHasStarted(false); setTimeLeft(0); }}
               disabled={!hasStarted}
-              className={`flex items-center gap-2 px-6 py-4 rounded-full font-semibold transition-all ${hasStarted ? 'bg-gray-100 hover:bg-gray-200 text-gray-700' : 'bg-gray-50 text-gray-400 cursor-not-allowed'}`}
-            >
+              className={`flex items-center gap-2 px-6 py-4 rounded-full font-semibold ${hasStarted ? 'bg-gray-100 hover:bg-gray-200 text-gray-700' : 'bg-gray-50 text-gray-400 cursor-not-allowed'}`}>
               <RotateCcw size={20} />
               Đặt lại
             </button>
           </div>
         </div>
       );
-    };
+    }
 
     function App() {
-      const [activeTab, setActiveTab] = useState(TABS[0].id);
+      const [activeTab, setActiveTab] = useState('love');
       const [completedTab, setCompletedTab] = useState(null);
-
       const activeTabData = TABS.find(t => t.id === activeTab);
 
-      const handleTimerComplete = (tab) => {
-        setCompletedTab(tab);
-      };
-
       return (
-        <div className={`min-h-screen bg-gradient-to-br ${activeTabData.gradient} flex flex-col transition-colors duration-500 p-4 sm:p-8 font-sans`}>
-
+        <div className={`min-h-screen bg-gradient-to-br ${activeTabData.gradient} flex flex-col p-4 sm:p-8`}>
           <div className="max-w-4xl mx-auto w-full mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">Yêu Thương, Khiêm Nhường, Vâng Phục</h1>
-
+            <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">Yêu Thương · Khiêm Nhường · Vâng Phục</h1>
             <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
-              {TABS.map((tab) => {
-                const isActive = activeTab === tab.id;
+              {TABS.map(tab => {
                 const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
                 return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-300 ${
-                      isActive
-                        ? `${tab.bg} text-white shadow-md scale-105`
-                        : 'bg-white text-gray-600 hover:bg-gray-50 hover:shadow'
-                    }`}
-                  >
+                  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-300 ${isActive ? `${tab.bg} text-white shadow-md scale-105` : 'bg-white text-gray-600 hover:bg-gray-50 hover:shadow'}`}>
                     <Icon size={18} />
                     {tab.label}
                   </button>
@@ -222,38 +218,28 @@
           </div>
 
           <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col justify-center">
-            {TABS.map((tab) => (
-              <TimerView
-                key={tab.id}
-                tab={tab}
-                isActive={activeTab === tab.id}
-                onComplete={handleTimerComplete}
-              />
+            {TABS.map(tab => (
+              <TimerView key={tab.id} tab={tab} isActive={activeTab === tab.id} onComplete={setCompletedTab} />
             ))}
           </div>
 
           {completedTab && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
               <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center">
-                <div className={`p-4 rounded-full ${completedTab.lightBg} ${completedTab.color} mb-4 animate-bounce`}>
+                <div className={`p-4 rounded-full ${completedTab.lightBg} ${completedTab.color} mb-4`}>
                   <BellRing size={40} />
                 </div>
-
                 <h3 className="text-2xl font-bold text-gray-800 mb-2">Đã hết giờ!</h3>
                 <p className="text-gray-600 mb-6">
                   Thời gian thực hành <span className={`font-semibold ${completedTab.color}`}>{completedTab.label}</span> của bạn đã hoàn tất.
                 </p>
-
-                <button
-                  onClick={() => setCompletedTab(null)}
-                  className={`w-full py-3 rounded-xl text-white font-semibold transition-colors ${completedTab.bg} ${completedTab.hoverBg}`}
-                >
+                <button onClick={() => setCompletedTab(null)}
+                  className={`w-full py-3 rounded-xl text-white font-semibold ${completedTab.bg} ${completedTab.hoverBg}`}>
                   Hoàn thành
                 </button>
               </div>
             </div>
           )}
-
         </div>
       );
     }
