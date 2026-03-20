@@ -5,25 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Yêu Thương, Khiêm Nhường, Vâng Phục</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@18",
-      "react/jsx-runtime": "https://esm.sh/react@18/jsx-runtime",
-      "react-dom/client": "https://esm.sh/react-dom@18/client",
-      "lucide-react": "https://esm.sh/lucide-react@latest"
-    }
-  }
-  </script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/lucide-react/dist/umd/lucide-react.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="m-0 p-0">
   <div id="root"></div>
 
-  <script type="text/babel" data-type="module">
-    import React, { useState, useEffect } from 'react';
-    import { createRoot } from 'react-dom/client';
-    import { Heart, Leaf, ShieldCheck, Play, Pause, RotateCcw, BellRing } from 'lucide-react';
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    const { Heart, Leaf, ShieldCheck, Play, Pause, RotateCcw, BellRing } = LucideReact;
 
     const TABS = [
       {
@@ -266,7 +258,7 @@
       );
     }
 
-    createRoot(document.getElementById('root')).render(<App />);
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
